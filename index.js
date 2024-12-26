@@ -33,6 +33,14 @@ async function run() {
     const database = client.db('raceConnectDB');
     const marathonCollection = database.collection('marathons');
 
+    // marathons related API
+
+    app.get('/marathonSection', async (req, res) => {
+        const cursor = marathonCollection.find().limit(6);
+        const result = await cursor.toArray();
+        res.send(result); 
+    });
+
 
   } finally {
     // Ensures that the client will close when you finish/error

@@ -34,7 +34,6 @@ async function run() {
         const marathonCollection = database.collection('marathons');
 
         // marathons related API
-
         app.get('/marathonSection', async (req, res) => {
             const cursor = marathonCollection.find().limit(6);
             const result = await cursor.toArray();
@@ -43,10 +42,17 @@ async function run() {
 
         app.get('/upcomingMarathons', async (req, res) => {
             const today = new Date();
-            const cursor = marathonCollection.find({ registrationEnd: { $gte: today.toISOString() }}).limit(6);
+            const cursor = marathonCollection.find({ registrationEnd: { $gte: today.toISOString() } }).limit(6);
             const result = await cursor.toArray();
             res.send(result);
         });
+
+        app.get('/marathon/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await marathonCollection.findOne(query)
+            res.send(result)
+        })
 
 
     } finally {

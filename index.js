@@ -32,6 +32,7 @@ async function run() {
 
         const database = client.db('raceConnectDB');
         const marathonCollection = database.collection('marathons');
+        const registrationCollection = database.collection('registrations');
 
         // marathons related API
         app.get('/marathonSection', async (req, res) => {
@@ -53,6 +54,23 @@ async function run() {
             const result = await marathonCollection.findOne(query)
             res.send(result)
         })
+
+        app.patch('/marathon/:id/increment', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const update = {
+                $inc: { registrationCount: 1 },
+            }
+            const result = await marathonCollection.updateOne(filter, update);
+            res.send(result);
+        });
+
+        // registrations related API
+        app.post('/registrations', async (req, res) => {
+            const registration = req.body;
+            const result = await registrationCollection.insertOne(registration);
+            res.send(result);
+        });
 
 
     } finally {

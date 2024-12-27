@@ -35,6 +35,12 @@ async function run() {
         const registrationCollection = database.collection('registrations');
 
         // marathons related API
+        app.get('/marathons', async (req, res) => {
+            const cursor = marathonCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        });
+
         app.get('/marathonSection', async (req, res) => {
             const cursor = marathonCollection.find().limit(6);
             const result = await cursor.toArray();

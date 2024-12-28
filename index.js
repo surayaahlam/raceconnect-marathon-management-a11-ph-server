@@ -117,9 +117,34 @@ async function run() {
             const decodedEmail = req.user?.email
             if (decodedEmail !== email)
                 return res.status(401).send({ message: 'unauthorized access' })
-            const query = { 'user.email': email }
-            const result = await marathonCollection.find(query).toArray()
-            res.send(result)
+
+            // Extracting the sortOrder query parameter (defaults to 'asc' if not provided)
+            const sortOrder = req.query.sortOrder;
+
+            // Base query to find marathons by user email
+            const query = { 'user.email': email };
+
+            let cursor;
+
+            // Sorting logic based on sortOrder query
+            if (sortOrder === 'asc') {
+                cursor = marathonCollection.aggregate([
+                    { $match: query },
+                    { $addFields: { createdAt: { $toDate: "$createdAt" } } },  // Convert string to Date
+                    { $sort: { createdAt: 1 } }  // Ascending: Oldest first
+                ]);
+            } else if (sortOrder === 'desc') {
+                cursor = marathonCollection.aggregate([
+                    { $match: query },
+                    { $addFields: { createdAt: { $toDate: "$createdAt" } } },  // Convert string to Date
+                    { $sort: { createdAt: -1 } }  // Descending: Newest first
+                ]);
+            } else {
+                cursor = marathonCollection.find(query); // No sorting
+            }
+
+            const result = await cursor.toArray();
+            res.send(result);
         });
 
         app.put('/updateMarathon/:id', verifyToken, async (req, res) => {

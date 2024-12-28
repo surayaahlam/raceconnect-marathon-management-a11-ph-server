@@ -7,9 +7,18 @@ const port = process.env.PORT || 5000;
 
 const app = express();
 
+// const cookieParser = require('cookie-parser')
+const corsOptions = {
+  origin: ['http://localhost:5173'],
+  credentials: true,
+  optionalSuccessStatus: 200,
+}
+
 // middleware
-app.use(cors());
-app.use(express.json());
+app.use(cors(corsOptions))
+app.use(express.json())
+// app.use(cookieParser())
+
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bo1l9.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -70,6 +79,13 @@ async function run() {
             const result = await marathonCollection.updateOne(filter, update);
             res.send(result);
         });
+
+        app.post('/addMarathon', async (req, res) => {
+            const marathonData = req.body
+            const result = await marathonCollection.insertOne(marathonData)
+            console.log(result)
+            res.send(result)
+        })
 
         // registrations related API
         app.post('/registrations', async (req, res) => {

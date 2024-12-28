@@ -134,7 +134,7 @@ async function run() {
             if (result.matchedCount === 0) {
                 return res.status(404).send({ success: false, message: 'Marathon not found' });
             }
-    
+
             if (result.modifiedCount > 0) {
                 return res.send({ success: true, message: 'Marathon updated successfully!' });
             }
@@ -155,7 +155,6 @@ async function run() {
         app.post('/addMarathon', async (req, res) => {
             const marathonData = req.body
             const result = await marathonCollection.insertOne(marathonData)
-            console.log(result)
             res.send(result)
         });
 
@@ -167,18 +166,66 @@ async function run() {
         });
 
         // registrations related API
+        app.get('/myApplyList/:email', verifyToken, async (req, res) => {
+            const email = req.params.email
+            const decodedEmail = req.user?.email
+            if (decodedEmail !== email)
+                return res.status(401).send({ message: 'unauthorized access' })
+
+            // Get search term from query parameters
+            const searchTerm = req.query.search || ""; // Default to empty string if not provided
+
+            const query = {
+                'email': email,
+                'marathonTitle': { $regex: searchTerm, $options: "i" } // Case-insensitive regex search
+            };
+
+            try {
+                const result = await registrationCollection.find(query).toArray();
+                res.send(result);
+            } catch (err) {
+                res.status(500).send({ message: 'Failed to fetch marathons', error: err });
+            }
+        });
+
+        app.put('/myApplyList/:id', verifyToken, async (req, res) => {
+            const id = req.params.id
+            const registrationData = req.body
+            const updated = {
+                $set: registrationData,
+            }
+            const query = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const result = await registrationCollection.updateOne(query, updated, options);
+            if (result.matchedCount === 0) {
+                return res.status(404).send({ success: false, message: 'Marathon Applied not found' });
+            }
+
+            if (result.modifiedCount > 0) {
+                return res.send({ success: true, message: 'Marathon Applied updated successfully!' });
+            }
+
+            res.send({ success: true, message: 'No changes were made to the marathon applied' });
+        });
+
         app.post('/registrations', async (req, res) => {
             const registration = req.body;
             // if a user registered in this marathon
             const query = { email: registration.email, marathonTitle: registration.marathonTitle }
             const alreadyExist = await registrationCollection.findOne(query)
-            console.log('If already exist-->', alreadyExist)
             if (alreadyExist)
                 return res
                     .status(400)
                     .send('You have already registered for this marathon!')
             const result = await registrationCollection.insertOne(registration);
             res.send(result);
+        });
+
+        app.delete('/myApplyList/:id', verifyToken, async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await registrationCollection.deleteOne(query)
+            res.send(result)
         });
 
 

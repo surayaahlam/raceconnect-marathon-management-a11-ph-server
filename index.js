@@ -110,7 +110,37 @@ async function run() {
             const query = { _id: new ObjectId(id) }
             const result = await marathonCollection.findOne(query)
             res.send(result)
-        })
+        });
+
+        app.get('/marathons/:email', verifyToken, async (req, res) => {
+            const email = req.params.email
+            const decodedEmail = req.user?.email
+            if (decodedEmail !== email)
+                return res.status(401).send({ message: 'unauthorized access' })
+            const query = { 'user.email': email }
+            const result = await marathonCollection.find(query).toArray()
+            res.send(result)
+        });
+
+        app.put('/updateMarathon/:id', verifyToken, async (req, res) => {
+            const id = req.params.id
+            const marathonData = req.body
+            const updated = {
+                $set: marathonData,
+            }
+            const query = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const result = await marathonCollection.updateOne(query, updated, options);
+            if (result.matchedCount === 0) {
+                return res.status(404).send({ success: false, message: 'Marathon not found' });
+            }
+    
+            if (result.modifiedCount > 0) {
+                return res.send({ success: true, message: 'Marathon updated successfully!' });
+            }
+
+            res.send({ success: true, message: 'No changes were made to the marathon' });
+        });
 
         app.patch('/marathon/:id/increment', async (req, res) => {
             const id = req.params.id
@@ -127,7 +157,14 @@ async function run() {
             const result = await marathonCollection.insertOne(marathonData)
             console.log(result)
             res.send(result)
-        })
+        });
+
+        app.delete('/marathon/:id', verifyToken, async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await marathonCollection.deleteOne(query)
+            res.send(result)
+        });
 
         // registrations related API
         app.post('/registrations', async (req, res) => {

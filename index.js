@@ -10,7 +10,11 @@ const app = express();
 
 const cookieParser = require('cookie-parser')
 const corsOptions = {
-    origin: ['http://localhost:5173'],
+    origin: [
+        'http://localhost:5173',
+        'https://race-connect-25d5a.web.app/',
+        'https://race-connect-25d5a.firebaseapp.com/'
+    ],
     credentials: true,
     optionalSuccessStatus: 200,
 }
@@ -86,7 +90,7 @@ async function run() {
         })
 
         // marathons related API
-        app.get('/marathons', async (req, res) => {
+        app.get('/marathons', verifyToken, async (req, res) => {
             const cursor = marathonCollection.find();
             const result = await cursor.toArray();
             res.send(result);
@@ -105,7 +109,7 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/marathon/:id', async (req, res) => {
+        app.get('/marathon/:id', verifyToken, async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
             const result = await marathonCollection.findOne(query)
@@ -167,7 +171,7 @@ async function run() {
             res.send({ success: true, message: 'No changes were made to the marathon' });
         });
 
-        app.patch('/marathon/:id/increment', async (req, res) => {
+        app.patch('/marathon/:id/increment', verifyToken, async (req, res) => {
             const id = req.params.id
             const filter = { _id: new ObjectId(id) }
             const update = {

@@ -12,8 +12,8 @@ const cookieParser = require('cookie-parser')
 const corsOptions = {
     origin: [
         'http://localhost:5173',
-        'https://race-connect-25d5a.web.app/',
-        'https://race-connect-25d5a.firebaseapp.com/'
+        'https://race-connect-25d5a.web.app',
+        'https://race-connect-25d5a.firebaseapp.com'
     ],
     credentials: true,
     optionalSuccessStatus: 200,
@@ -35,6 +35,11 @@ const client = new MongoClient(uri, {
         deprecationErrors: true,
     }
 });
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+};
 
 // verifyToken
 const verifyToken = (req, res, next) => {
@@ -52,10 +57,10 @@ const verifyToken = (req, res, next) => {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        // await client.db("admin").command({ ping: 1 });
+        // console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
         const database = client.db('raceConnectDB');
         const marathonCollection = database.collection('marathons');
@@ -68,24 +73,15 @@ async function run() {
             const token = jwt.sign(email, process.env.SECRET_KEY, {
                 expiresIn: '365d', // 1 year
             })
-            console.log(token)
-            res
-                .cookie('token', token, {
-                    httpOnly: true, // Prevent client-side access
-                    secure: process.env.NODE_ENV === 'production', // Secure flag in production
-                    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-                })
-                .send({ success: true })
+            res.cookie('token', token, cookieOptions).send({ success: true })
         })
 
-        // logout || clear cookie from browser
-        app.get('/logout', async (req, res) => {
+        // logout || clearing Token
+        app.post('/logout', async (req, res) => {
+            const user = req.body;
+            console.log("logging out", user);
             res
-                .clearCookie('token', {
-                    httpOnly: true,
-                    secure: process.env.NODE_ENV === 'production',
-                    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-                })
+                .clearCookie('token', { ...cookieOptions, maxAge: 0 })
                 .send({ success: true })
         })
 

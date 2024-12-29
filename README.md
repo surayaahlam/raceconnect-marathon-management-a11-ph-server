@@ -1,8 +1,8 @@
-# RaceConnect - Server Side  
+# 🏃‍♂️ **RaceConnect - Server Side**  
 
 This repository contains the backend implementation for the **RaceConnect - Marathon Management System**. The server handles user authentication, data management, and API endpoints for the platform.  
 
-## **Features**  
+## 🌟 **Features** 
 
 - **User Authentication**:  
   - Email/password-based authentication using **Firebase**.  
@@ -20,7 +20,7 @@ This repository contains the backend implementation for the **RaceConnect - Mara
   - All API routes are protected using JWT verification to ensure secure access.  
   - Unauthorized requests are met with proper HTTP status codes (`401` and `403`).  
 
-## **Technologies Used**  
+## 🛠️ **Technologies Used**  
 
 - **Node.js**: Backend runtime for building scalable applications.  
 - **Express.js**: Lightweight and flexible web framework for creating API endpoints.  
@@ -31,7 +31,7 @@ This repository contains the backend implementation for the **RaceConnect - Mara
 - **cookie-parser**: For handling cookies, especially JWTs.  
 - **cors**: Allows cross-origin requests between frontend and backend.  
 
-## **API Endpoints**  
+## 🌍 **API Endpoints**  
 
 ### **Authentication**  
 - **`POST /jwt`**: Authenticate user and return JWT token.  

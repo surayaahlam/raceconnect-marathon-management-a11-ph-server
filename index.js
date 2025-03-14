@@ -65,6 +65,7 @@ async function run() {
         const database = client.db('raceConnectDB');
         const marathonCollection = database.collection('marathons');
         const registrationCollection = database.collection('registrations');
+        const upcomingCollection = database.collection('upcoming');
 
         // generate jwt
         app.post('/jwt', async (req, res) => {
@@ -99,8 +100,7 @@ async function run() {
         });
 
         app.get('/upcomingMarathons', async (req, res) => {
-            const today = new Date();
-            const cursor = marathonCollection.find({ registrationEnd: { $gte: today.toISOString() } }).limit(6);
+            const cursor = upcomingCollection.find();
             const result = await cursor.toArray();
             res.send(result);
         });
